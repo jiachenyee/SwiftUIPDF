@@ -55,7 +55,10 @@ public struct PDF<FooterView> where FooterView: View {
         return VStack(spacing: 0) {
             VStack(spacing: page.componentGap) {
                 ForEach(page.components) { component in
-                    Image(uiImage: component.image)
+                    component.view
+                        .frame(width: paper.width - margins * 2,
+                               alignment: Alignment(horizontal: component.alignment, vertical: .center))
+                        .clipped()
                 }
             }
             Spacer(minLength: 0)

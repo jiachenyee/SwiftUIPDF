@@ -10,9 +10,13 @@ import SwiftUI
 
 struct PageComponent: Identifiable {
     let id = UUID()
-    let image: UIImage
+    let height: CGFloat
+    let view: AnyView
+    let alignment: HorizontalAlignment
     
-    var height: CGFloat {
-        image.size.height
+    init(image: UIImage, view: AnyView, alignment: HorizontalAlignment) {
+        self.height = image.size.height
+        self.view = view
+        self.alignment = alignment
     }
 }

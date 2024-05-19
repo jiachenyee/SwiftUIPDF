@@ -41,7 +41,7 @@ public struct PDFSection {
         for view in transformViewsToA4(effectiveWidth: effectiveWidth) {
             guard let image = renderSingleComponent(effectiveWidth: effectiveWidth, view: view) else { continue }
             
-            let component = PageComponent(image: image)
+            let component = PageComponent(image: image, view: view, alignment: alignment)
             
             if let lastPage = output.last,
                lastPage.height + componentGap + component.height < effectiveContentHeight {
@@ -59,7 +59,7 @@ public struct PDFSection {
             AnyView(
                 view
                     .frame(width: effectiveWidth,
-                           alignment: .leading)
+                           alignment: Alignment(horizontal: alignment, vertical: .center))
                     .clipped()
             )
         })
