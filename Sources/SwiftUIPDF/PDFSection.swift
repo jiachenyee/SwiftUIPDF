@@ -61,6 +61,7 @@ public struct PDFSection {
                     .frame(width: effectiveWidth,
                            alignment: Alignment(horizontal: alignment, vertical: .center))
                     .clipped()
+                    .environment(\.dynamicTypeSize, .large)
             )
         })
     }
