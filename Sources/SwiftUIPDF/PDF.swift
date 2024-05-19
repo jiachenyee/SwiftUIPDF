@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import PDFKit
 
 public struct PDF<FooterView> where FooterView: View {
     public var margins: CGFloat = 57
@@ -26,20 +27,55 @@ public struct PDF<FooterView> where FooterView: View {
     @discardableResult
     public func exportPDF(name: String, directory: URL = .temporaryDirectory) async -> URL {
         let format = UIGraphicsPDFRendererFormat()
-        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: paper.width, height: paper.height),
-                                             format: format)
         
         let url = directory.appendingPathComponent(name)
         
         let pages = await generatePages()
         
-        try? renderer.writePDF(to: url) { context in
-            for (index, page) in pages.enumerated() {
-                context.beginPage()
-                let imageRenderer = ImageRenderer(content: createPageView(from: page, pageNumber: index + 1))
-                imageRenderer.uiImage?.draw(at: CGPoint.zero)
+        let jobId = UUID().uuidString
+        
+        var urls: [URL] = []
+        
+        for (index, page) in pages.enumerated() {
+            let url = URL.temporaryDirectory.appending(path: "\(jobId)-\(index).pdf")
+            let pageView = createPageView(from: page, pageNumber: index + 1)
+            let renderer = ImageRenderer(content: pageView.preferredColorScheme(.light))
+            
+            renderer.render { size, context in
+                var box = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+                
+                guard let pdf = CGContext(url as CFURL, mediaBox: &box, nil) else {
+                    return
+                }
+                
+                pdf.beginPDFPage(nil)
+                
+                context(pdf)
+                
+                pdf.endPDFPage()
+                pdf.closePDF()
             }
+            
+            urls.append(url)
         }
+        
+        let mergedPdfDocument = PDFDocument()
+        
+        for url in urls {
+            guard let pdfDocument = PDFDocument(url: url) else {
+                continue
+            }
+            
+            let pageCount = pdfDocument.pageCount
+            for pageIndex in 0..<pageCount {
+                guard let page = pdfDocument.page(at: pageIndex) else { continue }
+                mergedPdfDocument.insert(page, at: mergedPdfDocument.pageCount)
+            }
+            
+            try? FileManager.default.removeItem(at: url)
+        }
+        
+        mergedPdfDocument.write(to: url)
         
         return url
     }
