@@ -32,13 +32,13 @@ public struct PDFSection {
         self.footerHeight = footerHeight
     }
     
-    @MainActor func createPages(margins: CGFloat, paper: Paper) -> [Page] {
+    @MainActor func createPages(margins: CGFloat, paper: Paper, dynamicTypeSize: DynamicTypeSize) -> [Page] {
         var output: [Page] = []
         
         let effectiveWidth = paper.width - margins * 2
         let effectiveContentHeight = paper.height - margins * 2 - footerHeight
         
-        for view in transformViewsToA4(effectiveWidth: effectiveWidth) {
+        for view in transformViewsToA4(effectiveWidth: effectiveWidth, dynamicTypeSize: dynamicTypeSize) {
             guard let image = renderSingleComponent(effectiveWidth: effectiveWidth, view: view) else { continue }
             
             let component = PageComponent(image: image, view: view, alignment: alignment)
@@ -54,14 +54,14 @@ public struct PDFSection {
         return output
     }
     
-    func transformViewsToA4(effectiveWidth: CGFloat) -> [AnyView] {
+    func transformViewsToA4(effectiveWidth: CGFloat, dynamicTypeSize: DynamicTypeSize) -> [AnyView] {
         rawContentViews.map({ view in
             AnyView(
                 view
                     .frame(width: effectiveWidth,
                            alignment: Alignment(horizontal: alignment, vertical: .center))
                     .clipped()
-                    .environment(\.dynamicTypeSize, .large)
+                    .environment(\.dynamicTypeSize, dynamicTypeSize)
             )
         })
     }

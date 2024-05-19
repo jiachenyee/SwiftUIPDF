@@ -6,6 +6,8 @@ public struct PDF<FooterView> where FooterView: View {
     public var margins: CGFloat = 57
     public var paper: Paper = .a4
     
+    public var dynamicTypeSize: DynamicTypeSize
+    
     private let footerView: (Int) -> FooterView
     private let footerHeight: CGFloat
     
@@ -14,6 +16,7 @@ public struct PDF<FooterView> where FooterView: View {
     public init(sections: [PDFSection],
                 margins: CGFloat = 57,
                 paper: Paper = .a4,
+                dynamicTypeSize: DynamicTypeSize = .large,
                 @ViewBuilder footerView: @escaping (Int) -> FooterView,
                 footerHeight: CGFloat) {
         self.margins = margins
@@ -21,6 +24,7 @@ public struct PDF<FooterView> where FooterView: View {
         self.footerView = footerView
         self.footerHeight = footerHeight
         self.sections = sections
+        self.dynamicTypeSize = dynamicTypeSize
     }
     
     @MainActor
@@ -82,7 +86,7 @@ public struct PDF<FooterView> where FooterView: View {
     
     private func generatePages() async -> [Page] {
         await sections.concurrentMap { section in
-            await section.createPages(margins: margins, paper: paper)
+            await section.createPages(margins: margins, paper: paper, dynamicTypeSize: dynamicTypeSize)
         }
         .flatMap { $0 }
     }
