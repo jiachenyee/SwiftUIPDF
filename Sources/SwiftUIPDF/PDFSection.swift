@@ -18,10 +18,12 @@ public struct PDFSection {
     private let footerHeight: CGFloat
     
     public init(alignment: HorizontalAlignment = .leading,
-                           @PDFBuilder _ content: () -> [AnyView],
-                           footerHeight: CGFloat = 48) {
+                @PDFBuilder _ content: () -> [PDFViewGroup],
+                footerHeight: CGFloat = 48) {
         
-        rawContentViews = content()
+        rawContentViews = content().flatMap({
+            $0.views
+        })
         
         self.footerHeight = footerHeight
     }
