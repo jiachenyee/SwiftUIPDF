@@ -17,17 +17,11 @@ public struct PDFSection {
     
     private let footerHeight: CGFloat
     
-    public init<PageViews>(alignment: HorizontalAlignment = .leading,
-                           @ViewBuilder _ content: @escaping () -> TupleView<PageViews>,
+    public init(alignment: HorizontalAlignment = .leading,
+                           @PDFBuilder _ content: () -> [AnyView],
                            footerHeight: CGFloat = 48) {
         
-        let views = content().getViews
-        
-        if views.isEmpty {
-            rawContentViews = [AnyView(content())]
-        } else {
-            rawContentViews = views
-        }
+        rawContentViews = content()
         
         self.footerHeight = footerHeight
     }
